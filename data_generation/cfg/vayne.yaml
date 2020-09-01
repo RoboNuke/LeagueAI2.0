@@ -1,0 +1,7 @@
+# list the spacific champs to load (can use All)
+champions:
+  - Vayne
+
+# same as above for creatures
+creatures:
+  - Summoners Rift Chaos Minion Melee
