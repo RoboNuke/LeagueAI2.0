@@ -1,0 +1,10 @@
+darknet/
+*.png
+LeagueAI/
+dragon_data/
+**/data
+**/results
+minimapTracker/champion/
+minimapTracker/DeepLeagueData/
+minimapTracker/League-Minimap-Scanner
+*~
