@@ -38,6 +38,7 @@ def extBigBoxes(img, bBoxDx, bBoxDy, topLeft):
     bot[0] = bot[0] + bBoxDx
     
     bBoxes = []
+    cv2.imshow("Testy", img)
     for i in range(5):
         #top[1] = top[1] + bBoxDy
         top[1] = bot[1]
@@ -94,7 +95,7 @@ def onTab(key):
     global NEWIMG, RUNNING
     if key == keyboard.Key.tab:
         NEWIMG = True
-        print "New Img" + str(NEWIMG)
+        print("New Img" + str(NEWIMG))
     elif key == keyboard.Key.esc:
         RUNNING = False
         return False
@@ -104,7 +105,8 @@ def onTab(key):
 if __name__ == "__main__":
     img = cv2.imread(imgPath)
     if RAW:
-        ptsDict = yaml.load(open(cfgFile), Loader = yaml.FullLoader)
+        #ptsDict = yaml.load(open(cfgFile), Loader = yaml.FullLoader)
+        ptsDict = yaml.load(open(cfgFile))
         readFromRawConfig(ptsDict)
     else:
         calDict = yaml.load(open(cfgFile), Loader = yaml.FullLoader)
@@ -119,7 +121,7 @@ if __name__ == "__main__":
     listener.start()
     while True:
         if NEWIMG:
-            print "fOUND NEW IMAGE"
+            print("fOUND NEW IMAGE")
             bBoxes = extBigBoxes(img, bBoxDx, bBoxDy, topLeft)
     
             for i, bb in enumerate(bBoxes):

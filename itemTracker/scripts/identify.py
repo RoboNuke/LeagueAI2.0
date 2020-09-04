@@ -12,10 +12,10 @@ Takes imgPath file and extracts image matches
 to-do:   corrolate images to league data
          Extract numbers from images
          Red Side Extraction
+         place into class formate
+
 
 """
-
-
 #cfgFile = "../cfg/itemPts.yaml"
 cfgFile = "../cfg/testItem.yaml"
 cfgOutFile = "../cfg/itemOffsets.yaml"

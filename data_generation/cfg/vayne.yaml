@@ -1,6 +1,6 @@
 # list the spacific champs to load (can use All)
 champions:
-  - Vayne
+  - None
 
 # same as above for creatures
 creatures:

@@ -27,11 +27,15 @@ prefix = ""
 # Video Config
 # display screen resolution, get it from your OS settings
 SCREEN_SIZE = (1920, 1080)
+#SCREEN_SIZE = pyautogui.size()
 # define the codec
+#fourcc =  cv2.VideoWriter_fourcc('P','I','M','1')
 fourcc = cv2.VideoWriter_fourcc(*"XVID")
 POSITION = (0,1000)
 MOVE = 5
 MOVESTEPS = 100
+#MOVESTEPS = 200
+#MOVESTEPS = 10
 
 
 def selectCreeps(driver):
@@ -41,9 +45,7 @@ def selectCreeps(driver):
 
 def selectChamps(driver):
     """ Open window for champs """
-    print "here"
     driver.get("http://www.teemo.gg/model-viewer?model-type=champions")
-    print "here"
     sleep(5)
 
 def getOptions(ide):
@@ -100,7 +102,7 @@ def rotateRecordAnimation(vid):
         m.release(mouse.Button.left)
         m.position = POSITION
         # make a screenshot
-        img = pyautogui.screenshot()
+        img = pyautogui.screenshot(region = (0,0,SCREEN_SIZE[0], SCREEN_SIZE[1]))
         # convert these pixels to a proper numpy array to work with OpenCV
         frame = np.array(img)
         # convert colors from BGR to RGB
@@ -114,31 +116,30 @@ def unpack(argv):
     try:
         opts, args = getopt.getopt(argv,"hc:o:p:", ["configFile=", "outputFile=", "prefix="])
     except getopt.GetoptError:
-        print 'video_generator.py -c <configuration file> -o <output file> -p <prefix>'
+        print ('video_generator.py -c <configuration file> -o <output file> -p <prefix>')
         sys.exit()
     for opt, arg in opts:
         if opt == "-h":
-            print  'web_interact.py -c <configuration file> -o <output file> -p <prefix>'
+            print('web_interact.py -c <configuration file> -o <output file> -p <prefix>')
             sys.exit()
         elif opt in ("-c", "configFile="):
             configFile = arg
-            print "here"
         elif opt in ("-o","outputFile="):
             outputFile = arg
         elif opt in ("-p","prefix="):
             prefix = arg
             
-    todoList = yaml.load(open(configFile), Loader = yaml.FullLoader)
+    todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
-    print "Will film the following champions:"
+    print("Will film the following champions:")
     for c in champs:
-        print "--", c
-    print "Will film the following creatures:"
+        print( "--", c)
+    print("Will film the following creatures:")
     for c in creeps:
-        print "--", c
-    print "Their videos can be found at: ", outputFile
-    print "All videos will be prefixed with: ", prefix
+        print ("--", c)
+    print("Their videos can be found at: ", outputFile)
+    print("All videos will be prefixed with: ", prefix)
     return (champs, creeps)
             
 def createVids(desired, options, driver):
@@ -149,16 +150,17 @@ def createVids(desired, options, driver):
         try:
             load(option, options)
         except:
-            print "Champion or Creatures ", option, " is not an option"
-            print "Continuing..."
+            print("Champion or Creatures ", option, " is not an option")
+            print("Continuing...")
             continue
         animations = getOptions("model-viewer-animation") #get all possible animations
         fullscreen(driver) # set window to full screen
         setViewpoint()
-        for animation in animations: 
+        for animation in animations:
             print(animation.text)
             #skip empty animations
-            if(animation.text == "Animation" or animation.text == "No Animation"):
+            if(animation.text == "Animation" or
+               animation.text == "No Animation" or "death" in animation.text.lower()):
                 continue
             selectAnimation(animation.text, animations)
             rotateRecordAnimation(vid)
@@ -182,6 +184,8 @@ if __name__ == "__main__":
     options = getOptions("model-viewer-champions")  #get list of champs
     if champs[0] == "All":
         createVids(options, options, driver)
+    elif champs[0] == "None":
+        pass
     else:
         createVids(champs, options, driver)
 
