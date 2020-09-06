@@ -81,7 +81,7 @@ def unpack(argv):
         elif opt in ("-m", "mapFile="):
             mapFile = arg
         elif opt in ("-n", "numberOfImages="):
-            numImages = arg
+            numImages = int(arg)
         elif opt in ("-l", "labelFile="):
             labelFile = arg
     todoList = yaml.load(open(configFile))
@@ -97,11 +97,11 @@ def unpack(argv):
     for c in countDic.keys():
         print("--", c)
     print("The data set can be found in:", outputFile)
-    print("Input data will be in:", outputFile + "images")
-    print("Key infromation will be in:", outputFile + "keys")
-    print("Mask images will be from: ", inputFile + "/" + inFilePrefix)
+    print("Input data will be from:", outputFile + "images")
+    print("Images with bounding boxes will be in:", outputFile + "keys")
+    print("Mask images will be from: ", inputFile +  inFilePrefix)
     print("Map images will be from:", mapFile)
-    print("Will  make", numImages, "raw data images.")
+    print("Will  make a data set consisting of", numImages, "raw images, bounding box images, and label files.")
     return (champs, creeps, countDic)
 
 def choices(dist, weight):
@@ -229,7 +229,7 @@ def save(frame, labelData, i):
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
-        fil.write(str(data[0]) + " " + str(data[1]) + " " +  str(data[2]) + " " + str(data[3]) + " " +  str(data[4]) + "\n")
+        fil.write(str(data[0]) + " " + str(data[1]/w) + " " +  str(data[2]/h) + " " + str(data[3]/w) + " " +  str(data[4]/h) + "\n")
     frame.save(outputFile + "key/key" + str(i) + ".jpg")
     
 def show(frame, name):
@@ -238,7 +238,7 @@ def show2(frame, name):
     cv2.imshow(name, cv2.cvtColor(np.array(frame), cv2.COLOR_RGBA2BGRA))
     
 if __name__ == "__main__":
-    (champs, creeps, countDic) = unpack(sys.argv)
+    (champs, creeps, countDic) = unpack(sys.argv[1:])
     mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
     dist = {}
 
@@ -268,9 +268,9 @@ if __name__ == "__main__":
         # place the masks in the image
         mapImg = getMapImg()
         frame, labelData = place(mapImg, champImgs, champMasks, creepImgs, creepMasks, champList, creepList)
-        show2(frame, "Map Image")
-        cv2.waitKey(0)
+        if DEBUG:
+            show2(frame, "Map Image")
+            cv2.waitKey(0)
         #frame = addNoise(frame)
         # generate key and save
         save(frame, labelData, i)
-        print("Next Image")
