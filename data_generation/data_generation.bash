@@ -8,11 +8,11 @@ export cropFile="data/2cropped_images/"
 export cropPrefix="test"
 export skipFrames=40
 
-#python scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
+#python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
 
 
 # Remove background, create images of sprite only
-python scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
+python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
 
 # Generate the data set
 #bootstrap.py

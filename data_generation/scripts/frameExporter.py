@@ -31,11 +31,11 @@ def unpack(argv):
     try:
         opts, args = getopt.getopt(argv,"ho:i:c:s:p:q:d", ["outputFile=","inputFile=", "configFile=", "skipFrames=","outFilePrefix=","inFilePrefix=", "debug="])
     except getopt.GetoptError:
-        print 'frameExporter.py -c <configuration file> -o <output file> -i <input file> -s <frames to skip> -p <output prefix> -q <input prefix> -d <True or False>'
+        print('frameExporter.py -c <configuration file> -o <output file> -i <input file> -s <frames to skip> -p <output prefix> -q <input prefix> -d <True or False>')
         sys.exit()
     for opt, arg in opts:
         if opt == "-h":
-            print 'frameExporter.py -c <configuration file> -o <output file> -i <input file> -s <frames to skip> -p <output prefix> -q <input prefix>'
+            print('frameExporter.py -c <configuration file> -o <output file> -i <input file> -s <frames to skip> -p <output prefix> -q <input prefix>')
             sys.exit()
         elif opt in ("-c", "configFile="):
             configFile = arg
@@ -51,28 +51,28 @@ def unpack(argv):
             inFilePrefix = arg
         elif opt in ("-d", "debug="):
             DEBUG = True
-    todoList = yaml.load(open(configFile), Loader = yaml.FullLoader)
+    todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
     if DEBUG:
-        print "Working in Debug Mode!"
-    print "Will load the following champions' video:"
+        print("Working in Debug Mode!")
+    print("Will load the following champions' video:")
     for c in champs:
-        print "--", c
-    print "Will load the following creatures' video:"
+        print("--", c)
+    print("Will load the following creatures' video:")
     for c in creeps:
-        print "--", c
-    print "Their exported frames can be found at: ", outputFile
-    print "All exported frames will be of the form: ", outFilePrefix, "\b[champion/creature name].png"
-    print "Videos will be loaded from: ", inputFile
-    print "Will load videos of the form: ", inFilePrefix, "\b[champion/creature name].avi"
-    print "Will skip ", skipFrames, " frames."
+        print("--", c)
+    print("Their exported frames can be found at: ", outputFile)
+    print("All exported frames will be of the form: ", outFilePrefix, "/[champion/creature name].png")
+    print("Videos will be loaded from: ", inputFile)
+    print("Will load videos of the form: ", inFilePrefix, "\b[champion/creature name].avi")
+    print("Will skip ", skipFrames, " frames.")
     return (champs, creeps)
 
 def exportVid(vid, champName):
     global outputFile, inputFile, configFile, skipFrames, inFilePrefix, outFilePrefix
     if vid.isOpened() == False:
-        print "Failure to load video"
+        print("Failure to load video")
     else:
         outDir = outputFile + outFilePrefix + "/" + champName 
         if not os.path.exists(outDir):
@@ -97,7 +97,7 @@ def exportVid(vid, champName):
                     cv2.imwrite(outDir + "/" + champName+ str(outputCounter) + "_mask.jpg", mask)
                 frameCount = frameCount + 1
             else:
-                print 'Processed', champName, "\b's video"
+                print('Processed', champName, "\b's video")
                 break
         return outputCounter
     return -1
@@ -122,7 +122,7 @@ def createMask(frame):
                 mask.itemset((u,v,1),255)
                 mask.itemset((u,v,2),255)
     kernel = np.ones((closeBox,closeBox),np.uint8)
-    kernel2 = np.ones((closeBox/2, closeBox/2), np.uint8)
+    kernel2 = np.ones((int(closeBox/2), int(closeBox/2)), np.uint8)
     #cv2.imshow("Mask", mask)
     #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel2)
     #mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel2)
@@ -181,15 +181,21 @@ if __name__ == "__main__":
     frameCountDic = {}
                             
     for champ in champs:
+        print( "Creating", champ, "\b's frames")
         vid = cv2.VideoCapture(inputFile + inFilePrefix + champ + ".avi")
         frameCountDic[champ] = exportVid(vid, champ)
+        
 
     for creep  in creeps:
+        print( "Creating", creep, "\b's frames")
         vid = cv2.VideoCapture(inputFile + inFilePrefix + creep + ".avi")
         frameCountDic[creep] = exportVid(vid, creep)
 
     #print frameCountDic
-    with open(outputFile + outFilePrefix + "/count.yaml",'w') as file:
+    countPath = outputFile + outFilePrefix
+    if not os.path.exists(countPath):
+        os.makedirs(countPath)
+    with open(countPath + "/count.yaml",'w') as file:
         yaml.dump(frameCountDic, file)
     sys.exit()
 
