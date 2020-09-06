@@ -25,10 +25,8 @@ outputFile = "../data/3data_set/"
 inputFile = "../data/2cropped_images/"
 inFilePrefix = "test"
 mapFile = "../data/0map/"
-labelFiles = "../cfg/vayne.names"
-numImages = 10
-labels = {"Summoners Rift Chaos Minion Melee":0,
-          "Vayne":1}
+numImages = 11
+labels = {}
 DEBUG = False
 
 # Probability Params
@@ -52,11 +50,10 @@ creepVar = 75 # pixels
 minScale = .35
 maxScale = .5
 
-
 mapImgs = []
 
 def unpack(argv):
-    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile
+    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile
     try:
         opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug="])
     except getopt.GetoptError:
@@ -87,7 +84,7 @@ def unpack(argv):
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
-    
+    writeLabelFile(champs, creeps)
     countFile = inputFile + inFilePrefix + "/" + countFile
     countDic = yaml.load(open(countFile))
     
@@ -104,6 +101,19 @@ def unpack(argv):
     print("Will  make a data set consisting of", numImages, "raw images, bounding box images, and label files.")
     return (champs, creeps, countDic)
 
+def writeLabelFile(champs, creeps):
+    global labelFile, labels
+    idx = 0
+    with open(outputFile + "labels.txt", "w") as f:
+        for champ in champs:
+            f.write(champ + "\n")
+            labels[champ] = idx
+            idx = idx + 1
+        for creep in creeps:
+            f.write(creep + "\n")
+            labels[creep] = idx
+            idx + 1
+            
 def choices(dist, weight):
     p = random()
     tot = 0.0
@@ -238,6 +248,7 @@ def show2(frame, name):
     cv2.imshow(name, cv2.cvtColor(np.array(frame), cv2.COLOR_RGBA2BGRA))
     
 if __name__ == "__main__":
+    print("\nStarting bootstrap")
     (champs, creeps, countDic) = unpack(sys.argv[1:])
     mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
     dist = {}
