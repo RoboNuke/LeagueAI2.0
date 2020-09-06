@@ -23,8 +23,8 @@ configFile = "../cfg/vayne.yaml"
 countFile = "count.yaml"
 outputFile = "../data/3data_set/"
 inputFile = "../data/2cropped_images/"
-inFilePrefix = "2test"
-mapFile = "../data/test_map.jpg"
+inFilePrefix = "test"
+mapFile = "../data/0map/"
 labelFiles = "../cfg/vayne.names"
 numImages = 10
 labels = {"Summoners Rift Chaos Minion Melee":0,
@@ -49,20 +49,22 @@ creepB = 200
 creepVar = 75 # pixels
 
 # Scaling 
-minScale = .1
-maxScale = .4
+minScale = .35
+maxScale = .5
 
+
+mapImgs = []
 
 def unpack(argv):
     global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile
     try:
         opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug="])
     except getopt.GetoptError:
-        print 'frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)'
+        print('frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)')
         sys.exit()
     for opt, arg in opts:
         if opt == "-h":
-            print 'frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)'
+            print('frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)')
             sys.exit()
         elif opt in ("-k", "countFile="):
             countFile = arg
@@ -82,24 +84,24 @@ def unpack(argv):
             numImages = arg
         elif opt in ("-l", "labelFile="):
             labelFile = arg
-    todoList = yaml.load(open(configFile), Loader = yaml.FullLoader)
+    todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
     
     countFile = inputFile + inFilePrefix + "/" + countFile
-    countDic = yaml.load(open(countFile), Loader = yaml.FullLoader)
+    countDic = yaml.load(open(countFile))
     
     if DEBUG:
-        print "Working in Debug Mode!"
-    print "The following champions and creatures will be in the images:"
+        print("Working in Debug Mode!")
+    print("The following champions and creatures will be in the images:")
     for c in countDic.keys():
-        print "--", c
-    print "The data set can be found in:", outputFile
-    print "Input data will be in:", outputFile + "images"
-    print "Key infromation will be in:", outputFile + "keys"
-    print "Mask images will be from: ", inputFile + "/" + inFilePrefix
-    print "Map images will be from:", mapFile
-    print "Will  make", numImages, "raw data images."
+        print("--", c)
+    print("The data set can be found in:", outputFile)
+    print("Input data will be in:", outputFile + "images")
+    print("Key infromation will be in:", outputFile + "keys")
+    print("Mask images will be from: ", inputFile + "/" + inFilePrefix)
+    print("Map images will be from:", mapFile)
+    print("Will  make", numImages, "raw data images.")
     return (champs, creeps, countDic)
 
 def choices(dist, weight):
@@ -109,7 +111,7 @@ def choices(dist, weight):
         tot = tot + weight[i]
         if p < tot:
             return dist[i]
-    print "Error in choices"
+    print("Error in choices")
         
 def getChamps(champs, countDic, dist):
     num = choices(dist['numChamps'][0],dist['numChamps'][1])
@@ -179,8 +181,8 @@ def resize(champs, champMasks, creeps, creepMasks):
     return (sChamp, sChampMask, sCreep, sCreepMask)
 
 def getMapImg():
-    # TO FIX, using this while waiting for SR images
-    return Image.open(mapFile)
+    global mapImgs
+    return choice(mapImgs)
     
 def addNoise(frame):
     pass
@@ -237,6 +239,7 @@ def show2(frame, name):
     
 if __name__ == "__main__":
     (champs, creeps, countDic) = unpack(sys.argv)
+    mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
     dist = {}
 
     # champ selection info
@@ -270,4 +273,4 @@ if __name__ == "__main__":
         #frame = addNoise(frame)
         # generate key and save
         save(frame, labelData, i)
-        print "Next Image"         
+        print("Next Image")
