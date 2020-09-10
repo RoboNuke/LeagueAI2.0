@@ -182,6 +182,7 @@ if __name__ == "__main__":
                             
     for champ in champs:
         print( "Creating", champ, "\b's frames")
+        print(inputFile + inFilePrefix + champ + ".avi")
         vid = cv2.VideoCapture(inputFile + inFilePrefix + champ + ".avi")
         frameCountDic[champ] = exportVid(vid, champ)
         

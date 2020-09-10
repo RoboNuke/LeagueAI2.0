@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from time import sleep
 from pynput import *
 
-import sys, getopt
+import sys, getopt, os
 import yaml
 
 import cv2
@@ -128,7 +128,7 @@ def unpack(argv):
             outputFile = arg
         elif opt in ("-p","prefix="):
             prefix = arg
-            
+    
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
@@ -147,6 +147,10 @@ def createVids(desired, options, driver):
     for option in desired:
         # create the video write object
         vid = cv2.VideoWriter(outputFile + prefix + option + ".avi", fourcc, 20.0, (SCREEN_SIZE))
+        
+        exitFullscreen(driver)
+        options = getOptions("model-viewer-champions")
+        print(option)
         try:
             load(option, options)
         except:
@@ -157,7 +161,7 @@ def createVids(desired, options, driver):
         fullscreen(driver) # set window to full screen
         setViewpoint()
         for animation in animations:
-            print(animation.text)
+            #print(animation.text)
             #skip empty animations
             if(animation.text == "Animation" or
                animation.text == "No Animation" or "death" in animation.text.lower()):
@@ -179,6 +183,9 @@ if __name__ == "__main__":
 
     # unpack config info
     (champs, creeps) = unpack(sys.argv[1:])
+    
+    if not os.path.exists(outputFile):
+        os.makedirs(outputFile)
     # Start with champion videos
     selectChamps(driver)
     options = getOptions("model-viewer-champions")  #get list of champs

@@ -9,18 +9,18 @@ export cropPrefix="vayne_"
 export skipFrames=5
 
 # bootstrap vars
-export datasetFile="data/3data_set/"
+export datasetFile="data/3data_set/vayne"
 export countFile="count.yaml"
 export mapFile="data/0map/"
-export datasetSize=5000
+export datasetSize=6000
 export labelFile="cfg/vayne.names"
 export width="960"
 export height="540"
 
 # split vars
-export datasetFinal="/vayneDataset/"
-export trainingSetSize=500
-export datasetCfg="/cfg/"
+export datasetFinal="data/vayneDataset/"
+export trainingSetSize=1000
+export datasetCfg="cfg/"
 export datasetName="vayne"
 export top=2
 
