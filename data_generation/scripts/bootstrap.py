@@ -199,7 +199,7 @@ def resize(champs, champMasks, creeps, creepMasks):
 
 def getMapImg():
     global mapImgs
-    return choice(mapImgs)
+    return choice(mapImgs).copy()
     
 def addNoise(frame):
     pass
@@ -241,13 +241,13 @@ def save(frame, labelData, i):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
+    for data in  labelData:
+        frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
+        fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
     frame = frame.resize((width, height))
     #w,h = frame.size
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
-    for data in  labelData:
-        frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
-        fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
     frame.save(outputFile + "key/key" + str(i) + ".jpg")
     
 def show(frame, name):
