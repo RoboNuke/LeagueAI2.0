@@ -17,6 +17,11 @@ from PIL import ImageColor, ImageDraw
 # 3 canon
 # 4 vayne
 
+
+labelColor={ 0: ImageColor.getrgb("blue"),
+             1: ImageColor.getrgb("red"),
+             2: ImageColor.getrgb("green"),
+             3: ImageColor.getrgb("purple")}
 #Globals
 
 configFile = "../cfg/vayne.yaml"
@@ -90,10 +95,9 @@ def unpack(argv):
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
-    writeLabelFile(champs, creeps)
     countFile = inputFile + inFilePrefix + "/" + countFile
     countDic = yaml.load(open(countFile))
-    
+    outputFile = outputFile + inFilePrefix + "/"
     if DEBUG:
         print("Working in Debug Mode!")
     print("The following champions and creatures will be in the images:")
@@ -109,9 +113,11 @@ def unpack(argv):
     return (champs, creeps, countDic)
 
 def writeLabelFile(champs, creeps):
-    global labelFile, labels
+    global labelFile, labels, outputFile
+    if not os.path.exists(outputFile):
+        os.makedirs(outputFile)
     idx = 0
-    with open(outputFile + "labels.txt", "w") as f:
+    with open(outputFile +  "labels.txt", "w") as f:
         for champ in champs:
             f.write(champ + "\n")
             labels[champ] = idx
@@ -190,8 +196,8 @@ def resize(champs, champMasks, creeps, creepMasks):
         sChampMask.append(champMasks[i].resize((w,h)))
     for i in range(len(creeps)):
         w,h = creeps[i].size
-        w = int(scale * w)
-        h = int(scale * h)
+        w = int(scale * w * 0.5)
+        h = int(scale * h * 0.5)
         sCreep.append(creeps[i].resize((w,h)))
         sCreepMask.append(creepMasks[i].resize((w,h)))
         
@@ -225,8 +231,6 @@ def place(mapImg, champs, champMasks, creeps, creepMasks, champList, creepList):
 
     return mapImg, labelData
 
-labelColor={ 0: ImageColor.getrgb("blue"),
-            1: ImageColor.getrgb("red") }
 def drawRect(frame, x, y, w, h, labe):
     global labelColor
     frame1 = ImageDraw.Draw(frame)
@@ -235,19 +239,19 @@ def drawRect(frame, x, y, w, h, labe):
     return frame
 def save(frame, labelData, i):
     global outputFile, width, height
-    if not os.path.exists(outputFile + "images/"):
+    if not os.path.exists(outputFile  + "images/"):
         os.makedirs(outputFile + "images/")
     if not os.path.exists(outputFile + "labels/"):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
+    fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
         fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
     frame = frame.resize((width, height))
     #w,h = frame.size
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
-    fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     frame.save(outputFile + "key/key" + str(i) + ".jpg")
     
 def show(frame, name):
@@ -275,6 +279,8 @@ if __name__ == "__main__":
         hCreepDist.append(haveCreep/maxCreep)
     dist['numCreeps'] = [numCreeps, hCreepDist, creepDist]
 
+    
+    writeLabelFile(champs, creeps)
     
     for i in range(numImages):
         # get the champs/creeps masks to use

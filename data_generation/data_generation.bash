@@ -24,10 +24,10 @@ export datasetCfg="cfg/"
 export datasetName="vayne"
 export top=2
 
-python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
+#python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
 
 # Remove background, create images of sprite only
-python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
+#python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
 
 # Generate the data set
 python3 scripts/bootstrap.py -c "$vidConfigFile" -o "$datasetFile" -k "$countFile" -i "$cropFile" -q "$cropPrefix" -m "$mapFile" -n "$datasetSize" -l "$labelFile" -w "$width" -j "$height"
