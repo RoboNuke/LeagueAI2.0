@@ -25,13 +25,14 @@ configFile="../cfg/vayne.yaml"
 datasetName = "vayneTest"
 topSize=2
 numClasses = 2
-
+width = 960
+height = 540
 
 def unpack(argv):
-    global trainSetSize, inputFile, outputFile, outConfig, configFile, datasetName, topSize
+    global trainSetSize, inputFile, outputFile, outConfig, configFile, datasetName, topSize, width, height
     try:
         print(argv)
-        opts, args = getopt.getopt(argv, "hi:c:o:s:k:n:t:", ["inputFile=", "configFile=", "outputFile=", "trainingSetSize=", "outputConfigFile=", "datasetName=", "top="])
+        opts, args = getopt.getopt(argv, "hi:c:o:s:k:n:t:w:h:", ["inputFile=", "configFile=", "outputFile=", "trainingSetSize=", "outputConfigFile=", "datasetName=", "top=", "width=", "heigt="])
     except getopt.GetoptError:
         print(getopt.GetoptError)
         print("split_train_test_darknet_style.py -i <input file> -c <configuration file> -o <output file> -s <desired training set size> -k <output cfg file> -n <dataset Name> -t <top n>")
@@ -55,9 +56,16 @@ def unpack(argv):
             datasetName = arg
         elif opt in ("-t", "top="):
             topSize = int(arg)
+        elif opt in ("-w", "widthp="):
+            width = int(arg)
+        elif opt in ("-h", "height="):
+            height = int(arg)
     labels = yaml.load(open(configFile))
     numClasses = len(labels["champions"]) + len(labels["creatures"])
-            
+
+def resize(img):
+    global width, height
+    return cv2.resize(width, height)
 def splitData(dataset):
     global trainSetSize
     random.shuffle(dataset)

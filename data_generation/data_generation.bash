@@ -1,34 +1,36 @@
 # vid generator vars
-export vidFile="data/1videos/"
+export vidFile="data/1videos/vayne/"
 export vidConfigFile="cfg/vayne.yaml"
-export vidPrefix="test_"
+export vidPrefix="vayne_"
 
 # crop vars
 export cropFile="data/2cropped_images/"
-export cropPrefix="test"
-export skipFrames=40
+export cropPrefix="vayne_"
+export skipFrames=5
 
 # bootstrap vars
 export datasetFile="data/3data_set/"
 export countFile="count.yaml"
 export mapFile="data/0map/"
-export datasetSize=11
+export datasetSize=5000
 export labelFile="cfg/vayne.names"
+export width="960"
+export height="540"
 
 # split vars
-export datasetFinal="/home/hunter/Games/vayneDataset/"
-export trainingSetSize=8
-export datasetCfg="/home/hunter/Games/cfg/"
-export datasetName="vayneTest"
+export datasetFinal="/vayneDataset/"
+export trainingSetSize=500
+export datasetCfg="/cfg/"
+export datasetName="vayne"
 export top=2
 
-#python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
+python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
 
 # Remove background, create images of sprite only
-#python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
+python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
 
 # Generate the data set
-#python3 scripts/bootstrap.py -c "$vidConfigFile" -o "$datasetFile" -k "$countFile" -i "$cropFile" -q "$cropPrefix" -m "$mapFile" -n "$datasetSize" -l "$labelFile"
+python3 scripts/bootstrap.py -c "$vidConfigFile" -o "$datasetFile" -k "$countFile" -i "$cropFile" -q "$cropPrefix" -m "$mapFile" -n "$datasetSize" -l "$labelFile" -w "$width" -j "$height"
 
 # organize the dataset for training
 python3 scripts/split_train_test_darknet_style.py -i "$datasetFile" -c "$vidConfigFile" -o "$datasetFinal" -s "$trainingSetSize" -k "$datasetCfg" -n "$datasetName" -t "$top"

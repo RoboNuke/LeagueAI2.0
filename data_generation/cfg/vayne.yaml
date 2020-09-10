@@ -5,3 +5,5 @@ champions:
 # same as above for creatures
 creatures:
   - Summoners Rift Chaos Minion Melee
+  - Summoners Rift Chaos Minion Ranged
+  - Summoners Rift Chaos Minion Siege

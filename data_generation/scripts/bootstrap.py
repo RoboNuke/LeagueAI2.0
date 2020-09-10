@@ -44,18 +44,20 @@ maxRot = 10  # deg variance
 
 # define how tightly packed the creeps are
 creepB = 200
-creepVar = 75 # pixels
+creepVar = 150 # pixels
 
 # Scaling 
 minScale = .35
 maxScale = .5
 
 mapImgs = []
+width = 960
+height = 540
 
 def unpack(argv):
-    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile
+    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile, width, height
     try:
-        opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug="])
+        opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:w:j:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug=", "width=", "height="])
     except getopt.GetoptError:
         print('frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)')
         sys.exit()
@@ -81,6 +83,10 @@ def unpack(argv):
             numImages = int(arg)
         elif opt in ("-l", "labelFile="):
             labelFile = arg
+        elif opt in ("-w", "width="):
+            width = int(arg)
+        elif opt in ("-j", "height="):
+            height = int(arg)
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
@@ -95,6 +101,7 @@ def unpack(argv):
         print("--", c)
     print("The data set can be found in:", outputFile)
     print("Input data will be from:", outputFile + "images")
+    print("Images will be (", width, ",",height, ")")
     print("Images with bounding boxes will be in:", outputFile + "keys")
     print("Mask images will be from: ", inputFile +  inFilePrefix)
     print("Map images will be from:", mapFile)
@@ -227,19 +234,20 @@ def drawRect(frame, x, y, w, h, labe):
                           labelColor[labe], width = 3)
     return frame
 def save(frame, labelData, i):
-    global outputFile
+    global outputFile, width, height
     if not os.path.exists(outputFile + "images/"):
         os.makedirs(outputFile + "images/")
     if not os.path.exists(outputFile + "labels/"):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
-    w,h = frame.size
+    frame = frame.resize((width, height))
+    #w,h = frame.size
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
-        fil.write(str(data[0]) + " " + str(data[1]/w) + " " +  str(data[2]/h) + " " + str(data[3]/w) + " " +  str(data[4]/h) + "\n")
+        fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
     frame.save(outputFile + "key/key" + str(i) + ".jpg")
     
 def show(frame, name):
