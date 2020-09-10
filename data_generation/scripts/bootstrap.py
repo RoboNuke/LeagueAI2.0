@@ -97,7 +97,7 @@ def unpack(argv):
     creeps = todoList["creatures"]
     countFile = inputFile + inFilePrefix + "/" + countFile
     countDic = yaml.load(open(countFile))
-    outputFile = outputFile + inFilePrefix + "/"
+    #outputFile = outputFile + inFilePrefix + "/"
     if DEBUG:
         print("Working in Debug Mode!")
     print("The following champions and creatures will be in the images:")
@@ -245,14 +245,16 @@ def save(frame, labelData, i):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
+    w,h = frame.size
+    frame = frame.resize((width, height))
+    key = frame.copy()
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
-        frame = drawRect(frame, data[1], data[2], data[3], data[4], data[0])
+        key = drawRect(key, data[1], data[2], data[3], data[4], data[0])
         fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
-    frame = frame.resize((width, height))
-    #w,h = frame.size
+    key = key.resize((width, height))
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
-    frame.save(outputFile + "key/key" + str(i) + ".jpg")
+    key.save(outputFile + "key/key" + str(i) + ".jpg")
     
 def show(frame, name):
     cv2.imshow(name, cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))

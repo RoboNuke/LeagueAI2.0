@@ -9,7 +9,7 @@ export cropPrefix="vayne_"
 export skipFrames=5
 
 # bootstrap vars
-export datasetFile="data/3data_set/vayne"
+export datasetFile="data/3data_set/vayne/"
 export countFile="count.yaml"
 export mapFile="data/0map/"
 export datasetSize=6000
