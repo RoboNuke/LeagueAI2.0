@@ -7,3 +7,17 @@ creatures:
   - Summoners Rift Chaos Minion Melee
   - Summoners Rift Chaos Minion Ranged
   - Summoners Rift Chaos Minion Siege
+
+
+champion_probabilities:
+  - 1.0
+
+creature_probabilities:
+  - 0.47
+  - 0.47
+  - 0.06
+
+creature_scale_factors:
+  - 0.5
+  - 0.5
+  - 0.7

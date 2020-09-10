@@ -54,13 +54,14 @@ creepVar = 150 # pixels
 # Scaling 
 minScale = .35
 maxScale = .5
+creepScaleFactors = {}
 
 mapImgs = []
 width = 960
 height = 540
 
 def unpack(argv):
-    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile, width, height
+    global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile, width, height, creepScaleFactors
     try:
         opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:w:j:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug=", "width=", "height="])
     except getopt.GetoptError:
@@ -95,6 +96,11 @@ def unpack(argv):
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
+    champProbs = todoList["champion_probabilities"]
+    creepProbs = todoList["creature_probabilities"]
+    creepScales = todoList["creature_scale_factors"]
+    for i, creep in enumerate(creeps):
+        creepScaleFactors[creep] = creepScales[i]
     countFile = inputFile + inFilePrefix + "/" + countFile
     countDic = yaml.load(open(countFile))
     #outputFile = outputFile + inFilePrefix + "/"
@@ -110,7 +116,7 @@ def unpack(argv):
     print("Mask images will be from: ", inputFile +  inFilePrefix)
     print("Map images will be from:", mapFile)
     print("Will  make a data set consisting of", numImages, "raw images, bounding box images, and label files.")
-    return (champs, creeps, countDic)
+    return (champs, creeps, countDic, champProbs, creepProbs)
 
 def writeLabelFile(champs, creeps):
     global labelFile, labels, outputFile
@@ -125,7 +131,7 @@ def writeLabelFile(champs, creeps):
         for creep in creeps:
             f.write(creep + "\n")
             labels[creep] = idx
-            idx + 1
+            idx = idx + 1
             
 def choices(dist, weight):
     p = random()
@@ -138,7 +144,7 @@ def choices(dist, weight):
         
 def getChamps(champs, countDic, dist):
     num = choices(dist['numChamps'][0],dist['numChamps'][1])
-    inChamps = [choice(champs) for i in range(num)]
+    inChamps = [choices(champs,dist['champProbs']) for i in range(num)]
     imgs = []
     masks = []
     names = []
@@ -150,14 +156,12 @@ def getChamps(champs, countDic, dist):
 
 def getCreeps(creeps, countDic, dist):
     num = choices(dist['numCreeps'][0], dist['numCreeps'][1])
+    inCreeps = [choices(creeps,dist['creepProbs']) for i in range(num)]
     imgs = []
     masks = []
     names = []
-    for i in range(num):
-        #print creeps
-        #print dist['numCreeps'][2]
-        creep = choices(creeps, dist['numCreeps'][2])
-        idx =  str(randint(1,countDic[creep]))
+    for creep in inCreeps:
+        idx = str(randint(1,countDic[creep]))
         imgs.append(Image.open(inputFile + inFilePrefix + "/" + creep +"/" + creep + idx + ".jpg"))
         masks.append(Image.open(inputFile + inFilePrefix + "/" + creep +"/" + creep +idx + "_mask.jpg").convert("L"))
         names.append(creep)
@@ -181,8 +185,8 @@ def rot(champs, champMasks, creeps, creepMasks):
 
     return (champRots, champMaskRots, creepRots, creepMaskRots)
 
-def resize(champs, champMasks, creeps, creepMasks):
-    global maxScale, minScale
+def resize(champs, champMasks, creeps, creepMasks,creepList):
+    global maxScale, minScale, creepScaleFactors
     scale = uniform(minScale, maxScale)
     sChamp = []
     sChampMask = []
@@ -196,8 +200,8 @@ def resize(champs, champMasks, creeps, creepMasks):
         sChampMask.append(champMasks[i].resize((w,h)))
     for i in range(len(creeps)):
         w,h = creeps[i].size
-        w = int(scale * w * 0.5)
-        h = int(scale * h * 0.5)
+        w = int(scale * w * creepScaleFactors[creepList[i]])
+        h = int(scale * h * creepScaleFactors[creepList[i]])
         sCreep.append(creeps[i].resize((w,h)))
         sCreepMask.append(creepMasks[i].resize((w,h)))
         
@@ -245,9 +249,8 @@ def save(frame, labelData, i):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
-    w,h = frame.size
-    frame = frame.resize((width, height))
     key = frame.copy()
+    frame = frame.resize((width, height))
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         key = drawRect(key, data[1], data[2], data[3], data[4], data[0])
@@ -263,7 +266,7 @@ def show2(frame, name):
     
 if __name__ == "__main__":
     print("\nStarting bootstrap")
-    (champs, creeps, countDic) = unpack(sys.argv[1:])
+    (champs, creeps, countDic, champProbs, creepProbs) = unpack(sys.argv[1:])
     mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
     dist = {}
 
@@ -274,6 +277,9 @@ if __name__ == "__main__":
         champDist.append(haveChamp/maxChamp)
     dist['numChamps'] = [numChamps, champDist]
 
+    # champ dist
+    
+
     # creep selection info
     numCreeps = range(maxCreep+1)
     hCreepDist = [1.0 - haveCreep]
@@ -281,9 +287,10 @@ if __name__ == "__main__":
         hCreepDist.append(haveCreep/maxCreep)
     dist['numCreeps'] = [numCreeps, hCreepDist, creepDist]
 
-    
+    dist['champProbs'] = champProbs
+    dist['creepProbs'] = creepProbs
     writeLabelFile(champs, creeps)
-    
+
     for i in range(numImages):
         # get the champs/creeps masks to use
         (champImgs, champMasks, champList) = getChamps(champs, countDic, dist)
@@ -291,7 +298,7 @@ if __name__ == "__main__":
         
         # randomly rotate + add noise to each mask
         (champImgs, champMasks, creepImgs, creepMasks) = rot(champImgs, champMasks, creepImgs, creepMasks)
-        (champImgs, champMasks, creepImgs, creepMasks) = resize(champImgs, champMasks, creepImgs, creepMasks)
+        (champImgs, champMasks, creepImgs, creepMasks) = resize(champImgs, champMasks, creepImgs, creepMasks, creepList)
         # place the masks in the image
         mapImg = getMapImg()
         frame, labelData = place(mapImg, champImgs, champMasks, creepImgs, creepMasks, champList, creepList)
