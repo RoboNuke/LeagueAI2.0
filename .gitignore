@@ -1,5 +1,6 @@
 darknet/
 *.png
+*.weights
 LeagueAI/
 dragon_data/
 **/data
