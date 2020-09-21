@@ -58,12 +58,15 @@ creepScaleFactors = {}
 
 mapImgs = []
 width = 960
-height = 540
+height = 544
+padding = 4
+initWidth = 0
+initHeight = 0
 
 def unpack(argv):
     global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile, width, height, creepScaleFactors
     try:
-        opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:w:j:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug=", "width=", "height="])
+        opts, args = getopt.getopt(argv,"hc:o:i:k:q:m:n:l:w:j:p:d", ["configFile=", "outputFile=","inputFile=", "countFile=","inFilePrefix=","mapFile=", "numberOfImages=","labelFile=", "debug=", "width=", "height=", "padding="])
     except getopt.GetoptError:
         print('frameExporter.py -c <config file> -k <count file> -o <output file> -i <input file> -q <input prefix> -l <label file> -d (debug)')
         sys.exit()
@@ -93,6 +96,8 @@ def unpack(argv):
             width = int(arg)
         elif opt in ("-j", "height="):
             height = int(arg)
+        elif opt in ("-p", "padding="):
+            padding = int(arg)
     todoList = yaml.load(open(configFile))
     champs = todoList["champions"]
     creeps = todoList["creatures"]
@@ -241,21 +246,30 @@ def drawRect(frame, x, y, w, h, labe):
     frame1.line([(x-w/2,y-h/2),(x+w/2,y-h/2),(x+w/2,y+h/2),(x-w/2,y+h/2),(x-w/2,y-h/2)],
                           labelColor[labe], width = 3)
     return frame
+def pad(frame):
+    global padding, width, height
+    result = Image.new(frame.mode, (width, height), (0,0,0))
+    result.paste(frame, (int(padding/2), 0))
+    return result
+        
 def save(frame, labelData, i):
-    global outputFile, width, height
+    global outputFile, width, height, padding, initWidth, initHeight
     if not os.path.exists(outputFile  + "images/"):
         os.makedirs(outputFile + "images/")
     if not os.path.exists(outputFile + "labels/"):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
+    initWidth, initHeight = frame.shape
     key = frame.copy()
-    frame = frame.resize((width, height))
+    frame = frame.resize((width-padding, height))
+    frame = pad(frame)
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         key = drawRect(key, data[1], data[2], data[3], data[4], data[0])
-        fil.write(str(data[0]) + " " + str(data[1]/width) + " " +  str(data[2]/height) + " " + str(data[3]/width) + " " +  str(data[4]/height) + "\n")
-    key = key.resize((width, height))
+        fil.write(str(data[0]) + " " + str(data[1]/initWidth) + " " +  str(data[2]/initHeight) + " " + str(data[3]/initWidth) + " " +  str(data[4]/initHeight) + "\n")
+    key = key.resize((width-padding, height))
+    key = pad(key)
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
     key.save(outputFile + "key/key" + str(i) + ".jpg")
     
@@ -268,6 +282,8 @@ if __name__ == "__main__":
     print("\nStarting bootstrap")
     (champs, creeps, countDic, champProbs, creepProbs) = unpack(sys.argv[1:])
     mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
+    initWidth, initHeight = mapImgs[0].size
+    print((initWidth, initHeight))
     dist = {}
 
     # champ selection info

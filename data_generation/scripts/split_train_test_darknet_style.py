@@ -26,12 +26,11 @@ datasetName = "vayneTest"
 topSize=2
 numClasses = 2
 width = 960
-height = 540
+height = 544
 
 def unpack(argv):
     global trainSetSize, inputFile, outputFile, outConfig, configFile, datasetName, topSize, width, height
     try:
-        print(argv)
         opts, args = getopt.getopt(argv, "hi:c:o:s:k:n:t:w:h:", ["inputFile=", "configFile=", "outputFile=", "trainingSetSize=", "outputConfigFile=", "datasetName=", "top=", "width=", "heigt="])
     except getopt.GetoptError:
         print(getopt.GetoptError)
@@ -46,8 +45,6 @@ def unpack(argv):
             configFile = arg
         elif opt in ("-o","outputFile="):
             outputFile = arg
-        elif opt in ("-s","trainingSetSize="):
-            outFilePrefix = int(arg)
         elif opt in ("-i","inputFile="):
             inputFile = arg
         elif opt in ("-k", "outputConfigFile="):
@@ -60,12 +57,31 @@ def unpack(argv):
             width = int(arg)
         elif opt in ("-h", "height="):
             height = int(arg)
+        elif opt in ("-s", "trainingSetSize="):
+            trainSetSize=int(arg)
     labels = yaml.load(open(configFile))
     numClasses = len(labels["champions"]) + len(labels["creatures"])
+    print("SUMMARY")
+    print("----------------------------------------------------------")
+    print("{:25s}: {}".format("Variable", "Value"))
+    print()
+    print("{:25s}: {:2.3f}".format("Number of Classes", numClasses))
+    print("{:25s}: {:2.3f}".format("Training Set Size", trainSetSize))
+    print("{:25s}: {:25s}".format("Input File", inputFile))
+    print("{:25s}: {:25s}".format("Location of outputs", outputFile))
+    print("{:25s}: {:25s}".format("Location of output configuration file", outConfig))
+    print("{:25s}: {:25s}".format("Dataset Name", datasetName))
+    print("{:25s}: {:2.3f}".format("Top number to look at", topSize))
+    print("{:25s}: {:2.3f}".format("Image Width", width))
+    print("{:25s}: {:2.3f}".format("Image Height", height))
+    
+    print("----------------------------------------------------------")
+
 
 def resize(img):
     global width, height
     return cv2.resize(width, height)
+
 def splitData(dataset):
     global trainSetSize
     random.shuffle(dataset)
@@ -74,28 +90,24 @@ def splitData(dataset):
     return train, test
 
 def copyData(trainFiles, testFiles):
-    if not os.path.exists(outputFile + "test/labels"):
-        os.makedirs(outputFile + "test/labels")
-    if not os.path.exists(outputFile + "train/labels"):
-        os.makedirs(outputFile + "train/labels")
-    if not os.path.exists(outputFile + "test/images"):
-        os.makedirs(outputFile + "test/images")
-    if not os.path.exists(outputFile + "train/images"):
-        os.makedirs(outputFile + "train/images")
+    if not os.path.exists(outputFile + "test/"):
+        os.makedirs(outputFile + "test/")
+    if not os.path.exists(outputFile + "train/"):
+        os.makedirs(outputFile + "train/")
     newTrain = []
     newTest = []
 
-    os.system('cp ' + inputFile + "labels.txt " + outputFile + "labels.txt")
+    os.system('cp ' + inputFile + "labels.txt " + outputFile + datasetName + ".names")
     for f in trainFiles:
         k = f[5:-4]
-        os.system('cp ' + inputFile + "images/" + f + " " + outputFile + "train/images/" + datasetName + k + ".jpg")
-        os.system('cp ' + inputFile + "labels/label" + k + ".txt " + outputFile + "train/labels/" + datasetName + k + ".txt")
-        newTrain.append(outputFile + "train/images/" + datasetName + k + ".jpg")
+        os.system('cp ' + inputFile + "images/" + f + " " + outputFile + "train/" + datasetName + k + ".jpg")
+        os.system('cp ' + inputFile + "labels/label" + k + ".txt " + outputFile + "train/" + datasetName + k + ".txt")
+        newTrain.append(outputFile + "train/" + datasetName + k + ".jpg")
     for f in testFiles:
         k = f[5:-4]
-        os.system('cp ' + inputFile + "images/" + f + " " + outputFile + "test/images/" + datasetName + k + ".jpg")
-        os.system('cp ' + inputFile + "labels/label" + k + ".txt " + outputFile + "test/labels/" + datasetName + k + ".txt")
-        newTest.append(outputFile + "test/images/" + datasetName + k + ".jpg")
+        os.system('cp ' + inputFile + "images/" + f + " " + outputFile + "test/" + datasetName + k + ".jpg")
+        os.system('cp ' + inputFile + "labels/label" + k + ".txt " + outputFile + "test/" + datasetName + k + ".txt")
+        newTest.append(outputFile + "test/" + datasetName + k + ".jpg")
     print("Completed copying files to new location")
     return newTrain, newTest
     
@@ -112,13 +124,13 @@ def makeListFile(trainFiles, testFiles):
     print("List Files Made")
 
 def makeLabelFile():
-    global outConfig, topSize, datasetName
-    with open(outConfig + datasetName + ".cfg", "w") as f:
+    global outConfig, topSize, datasetName, numClasses, outputFile
+    with open(outConfig + datasetName + ".data", "w") as f:
         f.write("classes=" + str(numClasses) + "\n")
         f.write("train = " + outputFile + "train.list\n")
         f.write("valid = " + outputFile + "test.list\n")
-        f.write("labels = " + outputFile + "labels.txt\n")
-        f.write("backup = backup/\n")
+        f.write("labels = " + outputFile + datasetName + ".name\n")
+        f.write("backup = backup/" + datasetName+ "\n")
         f.write("top=" + str(topSize) + "\n")
     print("Label File Made")
 

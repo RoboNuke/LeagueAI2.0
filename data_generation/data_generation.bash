@@ -15,14 +15,15 @@ export mapFile="data/0map/"
 export datasetSize=6000
 export labelFile="cfg/vayne.names"
 export width="960"
-export height="540"
+export height="544"
+export padding="4"
 
 # split vars
 export datasetFinal="data/vayneDataset/"
-export trainingSetSize=1000
+export trainingSetSize=5000
 export datasetCfg="cfg/"
 export datasetName="vayne"
-export top=2
+export top=1
 
 #python3 scripts/video_generator.py -c "$vidConfigFile" -o "$vidFile" -p "$vidPrefix"
 
@@ -30,7 +31,7 @@ export top=2
 #python3 scripts/frameExporter.py -o "$cropFile" -c "$vidConfigFile" -p "$cropPrefix" -i "$vidFile" -s "$skipFrames"  -q "$vidPrefix"
 
 # Generate the data set
-python3 scripts/bootstrap.py -c "$vidConfigFile" -o "$datasetFile" -k "$countFile" -i "$cropFile" -q "$cropPrefix" -m "$mapFile" -n "$datasetSize" -l "$labelFile" -w "$width" -j "$height"
+python3 scripts/bootstrap.py -c "$vidConfigFile" -o "$datasetFile" -k "$countFile" -i "$cropFile" -q "$cropPrefix" -m "$mapFile" -n "$datasetSize" -l "$labelFile" -w "$width" -j "$height" -p "$padding"
 
 # organize the dataset for training
 python3 scripts/split_train_test_darknet_style.py -i "$datasetFile" -c "$vidConfigFile" -o "$datasetFinal" -s "$trainingSetSize" -k "$datasetCfg" -n "$datasetName" -t "$top"

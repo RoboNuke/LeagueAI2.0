@@ -1,6 +1,6 @@
 classes=2
 train = data/vayneDataset/train.list
 valid = data/vayneDataset/test.list
-labels = data/vayneDataset/labels.txt
-backup = backup/
-top=2
+labels = data/vayneDataset/vayne.name
+backup = backup/vayne
+top=1
