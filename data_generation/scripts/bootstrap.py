@@ -1,5 +1,4 @@
-
-
+from __future__ import division
 import sys, getopt
 import os
 import yaml
@@ -60,8 +59,6 @@ mapImgs = []
 width = 960
 height = 544
 padding = 4
-initWidth = 0
-initHeight = 0
 
 def unpack(argv):
     global outputFile, inputFile, countFile, inFilePrefix, DEBUG, mapFile, numImages, configFile, labelFile, width, height, creepScaleFactors
@@ -230,16 +227,37 @@ def place(mapImg, champs, champMasks, creeps, creepMasks, champList, creepList):
         mapImg.paste(champs[i], uv, champMasks[i])
         # class, cx, cy, wid, height (raw)
         labelData.append([ labels[champList[i]], uv[0]+w/2, uv[1]+h/2, w, h])
-    cx = randint(creepB, wMap - creepB)
-    cy = randint(creepB, hMap - creepB)
-    uvs = [(int(np.random.normal(loc = cx,scale=creepVar)), int(np.random.normal(loc=cy,scale=creepVar))) for i in range(len(creeps)) ]
-    for i in range(len(creeps)):
-        w,h =  creeps[i].size
-        mapImg.paste(creeps[i], uvs[i], creepMasks[i])
-        labelData.append([ labels[creepList[i]], uvs[i][0]+w/2, uvs[i][1]+h/2, w, h])
+    (cx, cy) = getCreepLoc(creeps[0], wMap, hMap)
+    w,h = creeps[0].size
+    mapImg.paste(creeps[0], (cx,cy), creepMasks[0])
+    labelData.append([labels[creepList[0]], cx+w//2, cy+h//2, w, h])
+    for i in range(1, len(creeps)):
+        (x,y) = getCreepLoc(creeps[i], wMap, hMap, cx, cy)
+        mapImg.paste(creeps[i], (x,y), creepMasks[i])
+        if y > 1080:
+            print (x,y)
+        labelData.append([ labels[creepList[i]], x+w//2, y+h//2, w, h])
 
     return mapImg, labelData
 
+
+def getCreepLoc(creep, wMap, hMap, cx=None, cy=None):
+    global creepVar
+    w,h = creep.size
+    if cx == None and cy == None:
+        cx = randint(w//2,wMap-w//2)
+        cy = randint(h//2,hMap-h//2)
+        return (cx, cy)
+    else:
+        safe = False
+        while not safe:
+            x = int(np.random.normal(loc = cx,scale=creepVar))
+            y = int(np.random.normal(loc=cy,scale=creepVar))
+            if x > 0 and x < wMap-w-1 and y>0 and y < hMap-h-1:
+                safe = True
+        return (x,y) 
+        
+        
 def drawRect(frame, x, y, w, h, labe):
     global labelColor
     frame1 = ImageDraw.Draw(frame)
@@ -253,21 +271,29 @@ def pad(frame):
     return result
         
 def save(frame, labelData, i):
-    global outputFile, width, height, padding, initWidth, initHeight
+    global outputFile, width, height, padding
     if not os.path.exists(outputFile  + "images/"):
         os.makedirs(outputFile + "images/")
     if not os.path.exists(outputFile + "labels/"):
         os.makedirs(outputFile + "labels/")
     if not os.path.exists(outputFile + "key/"):
         os.makedirs(outputFile + "key/")
-    initWidth, initHeight = frame.shape
+    initWidth, initHeight = frame.size
     key = frame.copy()
     frame = frame.resize((width-padding, height))
     frame = pad(frame)
     fil = open(outputFile + "labels/label" + str(i) + ".txt", "w+")
     for data in  labelData:
         key = drawRect(key, data[1], data[2], data[3], data[4], data[0])
-        fil.write(str(data[0]) + " " + str(data[1]/initWidth) + " " +  str(data[2]/initHeight) + " " + str(data[3]/initWidth) + " " +  str(data[4]/initHeight) + "\n")
+        outString = str(data[0]) + " " + str(data[1]/initWidth) + " " +  str(data[2]/initHeight) +" " + str(data[3]/initWidth) + " " +  str(data[4]/initHeight) + "\n"
+        fil.write(outString)
+        if (data[1]/initWidth < 0.0 or data[2]/initHeight > 1.0 or data[3]/initWidth<0.0 or data[4]/initHeight > 1.0):
+            print("Init:", (initWidth, initHeight))
+            print("Data Values:", data[1], data[2], data[3], data[4])
+            print("File: " + outString)
+            print("Index:", i)
+            print()
+            
     key = key.resize((width-padding, height))
     key = pad(key)
     frame.save(outputFile + "images/image" + str(i) + ".jpg")
@@ -282,8 +308,6 @@ if __name__ == "__main__":
     print("\nStarting bootstrap")
     (champs, creeps, countDic, champProbs, creepProbs) = unpack(sys.argv[1:])
     mapImgs = [Image.open(mapFile + f) for f in os.listdir(mapFile)]
-    initWidth, initHeight = mapImgs[0].size
-    print((initWidth, initHeight))
     dist = {}
 
     # champ selection info
