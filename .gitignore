@@ -1,4 +1,4 @@
-darknet/
+darknet/*
 !darknet/eval.py
 *.png
 *.weights
