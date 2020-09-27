@@ -1,4 +1,5 @@
 darknet/
+!darknet/eval.py
 *.png
 *.weights
 LeagueAI/
