@@ -2,32 +2,55 @@
 
 
 class Simple_Vayne():
-    def __inti__(self, observer = None(), reward=None):
+    def __inti__(self, observer = None, controller = None, reward=None):
         self.observer = observer
+        self.controller = controller
+        self.vayne = None
         print("Initializing Simple Vayne AI Controller")
 
     def getObs(self):
-        self.obs = self.observer.getObs()
-        self.newObs = True
-
-    def selectAction(self, actions):
-        pass
+        self.obs = self.observer.stateQue.get()
 
     def updateBelief(self):
-        pass
+        for ob in self.obs:
+            if ob.idx = 0:
+                self.vayne = ob
+        self.obs.del(self.vayne)
+        
 
+    def getDist(self, ob):
+        dx = ob.x - self.vayne.x
+        dy = ob.y - self.vayne.y
+
+        return( dx * dx + dy * dy )
+
+        
     def getActions(self):
-        pass
+        actions = []
+        for ob in obs:
+            actions.append( (self.getDist(ob), ('attack-click', (ob.x, ob.y)) ) )
+
+    def selectAction(self, actions):
+        if(len(actions) == 0):
+            return(-1)
+        miny = actions[0][0]
+        bestAct = actions[0][1]
+        for act in actions:
+            if act[0] < miny:
+                bestAct = act[1]
+                miny = act[0]
+        return bestAct
+                            
 
     def mainLoop(self):
         while self.RUNNING:
-            if not self.newObs:
+            self.getObs()
+            self.updateBelief()
+            actions = self.getActions()
+            bestAction = self.selectAction(actions)
+            if bestAction == -1:
                 continue
-            self.newObs = False
-
-            self.updateBelief(self.obs)
-            actions = self.getActions
-            self.action = self.selectAction(actions)
+            self.controller.act(bestAction)
             
             
 
