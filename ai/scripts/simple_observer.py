@@ -40,6 +40,9 @@ def parser():
 
     parser.add_argument("--padding", type=int, default=4,
                         help = "Padding to add half of above and below the image")
+    
+    parser.add_argument("--save_video", type=bool, default=False,
+                        help = "Save the video to output.avi")
     return parser.parse_args()
 
 class Observation():
@@ -49,14 +52,13 @@ class Observation():
         self.x = x
         self.y = y
         
-
 class Observer(object):
     def __init__(self, args):
         print("Initializing Observer")
         self.args = args
         self.RUNNING = True
         self.padding = args.padding
-        
+        self.SAVEVID = args.save_video
         # set up network
         self.network, self.classNames, self.classColors = darknet.load_network(
             self.args.cfg,
@@ -120,7 +122,7 @@ class Observer(object):
     def inference(self, imgQue, detQue, fpsQue, msgQue, stateQue):
         dImg = darknet.make_image(self.width, self.height, 3)
         msg = None
-        names = {"Vayne":0, "Melee":1, "Ranged":2, "Seige":3}
+        names = {"Vayne":0, "Melee":1, "Ranged":2, "Siege":3}
         while self.RUNNING:
             prevTime = time.time()
             try:
@@ -149,15 +151,19 @@ class Observer(object):
                 fpsQue.put(fps, timeout=2)
             except:
                 continue
-            print("FPS: {}".format(fps))
+            #print("FPS: {}".format(fps))
             obs = []
             for det in dets:
                 classIdx = names[det[0]]
                 prob = det[1]
-                x = (det[2][0] + det[2][2])/2.0 * self.initWidth/self.width
-                y = (det[2][1] + det[2][3])/2.0 * self.initHeight/self.height
+                x = (det[2][0] + det[2][2]/2.0) * self.initWidth/self.width
+                y = (det[2][1] + det[2][3]/2.0) * self.initHeight/self.height
                 obs.append(Observation(classIdx, prob, x, y))
-            print(obs)
+            #print(obs)
+            try:
+                imgQue.put(img, block=False)
+            except:
+                pass
             try:
                 stateQue.put(obs, block=False)
             except:
@@ -168,23 +174,31 @@ class Observer(object):
         self.window = cv2.namedWindow("Inference", cv2.WINDOW_NORMAL)
         cv2.moveWindow("Inference", 200, 2000)
         cv2.resizeWindow("Inference", self.height, self.width)
+        if self.SAVEVID:
+            fourcc = cv2.VideoWriter_fourcc(*"XVID")
+            vid = cv2.VideoWriter('output.avi', fourcc, 20.0,
+                                (self.height, self.width))
         while self.RUNNING:
-            print("drawing")
             frame = imgQue.get()
             dets = detQue.get()
             fps = fpsQue.get()
             if frame is not None:
-                print(dets)
+                #print(dets)
                 image = darknet.draw_boxes(dets, frame, self.classColors)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 image = cv2.resize(image, (self.height, self.width))
                 #if self.args.display:
+                if self.SAVEVID:
+                    vid.write(image)
                 cv2.imshow('Inference', image)
                 if cv2.waitKey(fps) == 27:
                     print("shutting down")
                     msgQue.put(False)
+                    #vid.release()
                     self.shutdown()
+        vid.release()
         cv2.destroyAllWindows()
+        print("Drawing completely done")
 
 if __name__ == "__main__":
     args = parser()
