@@ -14,9 +14,11 @@ def detect(c):
 def getRects(frame):
     # preprocess img
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    img = cv2.GaussianBlur(img, (5,5), 0)
-    thresh = cv2.threshold(img, 60, 255, cv2.THRESH_BINARY)[1]
-
+    cv2.imshow("Grey Image", img)
+    img = cv2.GaussianBlur(img, (15,15), 0)
+    cv2.imshow("Blurred Image", img)
+    thresh = cv2.threshold(img, 70, 255, cv2.THRESH_BINARY)[1]
+    cv2.imshow("Thresholded Image", thresh)
     cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     cnts = imutils.grab_contours(cnts)
@@ -24,19 +26,20 @@ def getRects(frame):
     for c in cnts:
         shape = detect(c)
         if shape != -1:
-            M = cv2.moments(c)
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
+            #M = cv2.moments(c)
+            #cX = int(M["m10"] / M["m00"])
+            #cY = int(M["m01"] / M["m00"])
 
             cv2.drawContours(frame, [c], -1, (0,255, 0), 2)
-            cv2.putText( frame, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255),2)
+            #cv2.putText( frame, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255),2)
 
     return(frame)
 
 if __name__ == "__main__":
-    img = cv2.imread("../data/shapes_and_colors.jpg")
+    #img = cv2.imread("../data/shapes_and_colors.jpg")
+    img = cv2.imread("../data/images/eval_17.jpg")
+    cv2.imshow("Initial",img)
     frame = getRects(img.copy())
 
     cv2.imshow("Final", frame)
-    cv2.imshow("Initial",img)
     cv2.waitKey(0)
