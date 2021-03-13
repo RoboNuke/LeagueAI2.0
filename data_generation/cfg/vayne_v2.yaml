@@ -1,0 +1,64 @@
+# list the spacific champs to load (can use All)
+champions:
+  - Vayne
+  - Jinx
+
+# same as above for creatures
+creatures:
+  - Summoners Rift Chaos Minion Melee
+  - Summoners Rift Chaos Minion Ranged
+  - Summoners Rift Chaos Minion Siege
+  - Summoners Rift Chaos Minion Super
+
+champion_probabilities:
+  - 0.5
+  - 0.5
+
+creature_probabilities:
+  - 0.25
+  - 0.25
+  - 0.25
+  - 0.25
+
+creature_scale_factors:
+  - 0.5
+  - 0.5
+  - 0.7
+  - 1.0
+
+structure_file_paths:
+  - ../data/imgBase/chaos_tower.jpg
+  - ../data/imgBase/chaos_nexus.jpg
+  - ../data/imgBase/chaos_inhib.jpg
+
+structure_probabilities:
+  - 0.34
+  - 0.33
+  - 0.33
+
+structure_scale_factors:
+  - 1.0
+  - 1.0
+  - 1.0
+
+healthbar_file_paths:
+  - player: ../data/imgBase/champion_healthbar.jpg
+  - chaos:
+    - minion: ../data/imgBase/chaos_minion_healthbar.jpg
+    - tower: ../data/imgBase/chaos_tower_healthbar.jpg
+    - nexus: ../data/imgBase/chaos_nexus_healthbar.jpg
+    - inhib: ../data/imgBase/chaos_inhib_healthbar.jpg
+
+extras_filepaths:
+  - ../data/imgBase/hud.jpg
+  - ../data/imgBase/crusier.jpg
+
+extra_probs:
+  - 1.0
+  - 0.5
+
+# note some extras (minimap, hud ect.) have fixed placements, otherwise put random
+extra_placement:
+  - {x: 0, y:0}
+  - random
+

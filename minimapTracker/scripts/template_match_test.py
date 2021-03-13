@@ -30,7 +30,7 @@ def getClassPics(classIdxs, classNames):
     global picPath
     data = []
     for idx in classIdxs:
-        print picPath + classNames[idx] + ".png"
+        print( picPath + classNames[idx] + ".png")
         data.append( ( cv2.resize(cv2.imread(picPath + classNames[idx] + ".png"), (24,24)),
                      classNames[idx]))
     return data
@@ -39,10 +39,10 @@ def getClassPics(classIdxs, classNames):
 if __name__ == "__main__":
     classNames = get_classes(classPath)
     method = methods[1]
-    print "Found using Method:", method
+    print( "Found using Method:", method)
     for i in range(4):
         img = cv2.cvtColor(imgs[i], cv2.COLOR_RGB2BGR)
-        print img.shape
+        print (img.shape)
         img2 = img.copy()
         classIdxs = []
         for b in boxes[i]:
