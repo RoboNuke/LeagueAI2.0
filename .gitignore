@@ -6,6 +6,7 @@ LeagueAI/
 dragon_data/
 **/data
 **/results
+**/datasets
 minimapTracker/champion/
 minimapTracker/DeepLeagueData/
 minimapTracker/League-Minimap-Scanner
